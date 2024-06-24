@@ -1,59 +1,38 @@
-from __future__ import annotations
-
-from itertools import zip_longest
-
 from firmware_tools import Device, JLinkFlasher, STLinkFlasher
 
-
 class Loader:
-    def __init__(self) -> None:
+    def __init__(self):
         pass
 
-    @staticmethod
-    def show_devices_list(devices: list[Device]) -> None:
-        half_length = (len(devices) + 1) // 2
-        numerated = list(enumerate(devices))
-        zipper = zip_longest(
-            numerated[:half_length], numerated[half_length:], fillvalue=[
-                None, None,
-            ],
-        )
-        color_ending = '\033[0m'
-        for (i1, dev_1), (i2, dev_2) in zipper:
-            l_col_text = (
-                f"{dev_1.family.value}{i1:3}."
-                f" {dev_1.name + dev_1.add_name:50}{color_ending}"
-            )
-            if dev_2:
-                r_col_text = (
-                    f"{dev_2.family.value}{i2:3}."
-                    f" {dev_2.name}{dev_2.add_name}{color_ending}"
-                )
-            else:
-                r_col_text = ""
-            print(f'{l_col_text}{r_col_text}')
-        print()
+    def input_device_id(self) -> str:
+        device_id = input("Enter device ID (3 or 4 byte hexadecimal): ")
+        if len(device_id) not in [6, 8] or not all(c in '0123456789ABCDEFabcdef' for c in device_id):
+            raise ValueError("Invalid device ID")
+        return device_id
 
-    def get_device(self):
-        pass
+    def choose_subtype(self) -> int:
+        subtype = int(input("Enter the subtype (0-255): "))
+        if not (0 <= subtype <= 255):
+            raise ValueError("Invalid subtype")
+        return subtype
 
-    def get_firmware(self):
-        # TODO firmware file always have extension .hex and name in format ->
-        #  [device_name][version][region][id_address][subtype][id_type].hex
-        #  [DoorProtect][5.5.55.5][EU][0x0077AA][0][3B].hex example in firmware_for_test
-        #  you can create you owm files for tests
-        pass
+    def choose_flasher(self):
+        flasher_type = input("Choose flasher (JLink/STLink): ").strip().lower()
+        if flasher_type == 'jlink':
+            return JLinkFlasher
+        elif flasher_type == 'stlink':
+            return STLinkFlasher
+        else:
+            raise ValueError("Invalid flasher type")
 
-    def input_device_id(self):
-        # TODO device id can only be 3 or 4 byte, and it`s hexadecimal
-        pass
+    def get_device(self, device_id: str, subtype: int) -> Device:
+        # This is a placeholder for the actual device fetching logic
+        return Device(family='STM32', name='Device1', add_name='V1')
 
-    def color_to_flash(self):
-        pass
+    def get_firmware(self) -> str:
+        # This should return the path to the firmware file
+        return input("Enter the path to the firmware file: ")
 
-    def choose_subtype(self):
-        # TODO subtype only digital in range 0 - 255
-        pass
-
-    def choose_flasher(self) -> type[JLinkFlasher] | type[STLinkFlasher]:
-        pass
+    def flash_device(self, device: Device, firmware_path: str, flasher):
+        # This is a placeholder for the actual flashing logic
+        print(f"Flashing {device.name} with firmware from {firmware_path} using {flasher.__name__}")
